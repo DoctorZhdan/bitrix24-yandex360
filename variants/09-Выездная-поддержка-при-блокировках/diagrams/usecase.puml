@@ -1,33 +1,57 @@
+
 @startuml
+
 left to right direction
 
+skinparam linetype ortho
+
 actor "Выездной инженер" as Engineer
+actor "Офисный сотрудник" as Office
 
-rectangle "Интеграция Bitrix24 и Яндекс 360 для выездных инженеров" {
+Engineer -[hidden]down- Office
 
-    usecase "Получить назначенную\nили переназначенную задачу" as UC1
+rectangle "Интеграционная система Bitrix24 и Яндекс 360 для выездных инженеров" {
 
-    usecase "Подтвердить получение задачи" as UC2
+    usecase "Назначить задачу\nвыездному инженеру" as UC1
+    usecase "Получить назначенную\nили переназначенную задачу" as UC2
+    usecase "Подтвердить получение задачи" as UC3
+    usecase "Передать статус и\nрезультат выполнения работ" as UC4
+    usecase "Передать фотографии\nпо задаче" as UC5
+    usecase "Сообщить о проблеме\nпри выполнении задачи" as UC6
+    usecase "Получить обратную связь\nпо выполнению задачи" as UC7
+    usecase "Передать дальнейшие указания\nдействий для инженера от руководства" as UC8
 
-    usecase "Передать статус и\nрезультат выполнения работ" as UC3
+    usecase "Предотвратить повторную\nобработку событий" as UC9
 
-    usecase "Передать фотографии\nпо задаче" as UC4
+    UC1 -[hidden]down- UC2
+    UC2 -[hidden]down- UC3
+    UC3 -[hidden]down- UC4
+    UC4 -[hidden]down- UC5
+    UC5 -[hidden]down- UC6
+    UC6 -[hidden]down- UC7
+    UC7 -[hidden]down- UC8
 
-    usecase "Сообщить о проблеме\nпри выполнении задачи" as UC5
-
-    usecase "Предотвратить повторную\nобработку событий" as UC6
+    UC4 -[hidden]right- UC9
 }
 
-Engineer --> UC1
-Engineer --> UC2
-Engineer --> UC3
-Engineer --> UC4
-Engineer --> UC5
+Engineer -right-> UC2
+Engineer -right-> UC3
+Engineer -right-> UC4
+Engineer -right-> UC5
+Engineer -right-> UC6
+Engineer -right-> UC8
 
-UC1 ..> UC6 : <<include>>
-UC2 ..> UC6 : <<include>>
-UC3 ..> UC6 : <<include>>
-UC4 ..> UC6 : <<include>>
-UC5 ..> UC6 : <<include>>
+Office -right-> UC1
+Office -right-> UC7
+Office -right-> UC8
+
+UC9 ..> UC1 : <<extend>>
+UC9 ..> UC2 : <<extend>>
+UC9 ..> UC3 : <<extend>>
+UC9 ..> UC4 : <<extend>>
+UC9 ..> UC5 : <<extend>>
+UC9 ..> UC6 : <<extend>>
+UC9 ..> UC7 : <<extend>>
+UC9 ..> UC8 : <<extend>>
 
 @enduml
