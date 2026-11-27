@@ -1,0 +1,40 @@
+@startuml
+title КНТ-3. Поиск задачи Bitrix24, связанной со сделкой
+
+autonumber
+
+participant "Система интеграции" as Integration
+participant "Bitrix24 REST API" as Bitrix
+database "Задачи Bitrix24" as Tasks
+
+Integration -> Integration: Получение ID сделки
+Integration -> Integration: Формирование значения D_{ID_сделки}
+
+Integration -> Bitrix: POST tasks.task.list
+note right of Integration
+filter:
+  UF_CRM_TASK = D_14821
+
+select:
+  ID, TITLE, RESPONSIBLE_ID,
+  STATUS, DEADLINE, UF_CRM_TASK
+end note
+
+Bitrix -> Tasks: Поиск задачи по UF_CRM_TASK
+Tasks --> Bitrix: Результат поиска
+
+alt Задача найдена
+    Bitrix --> Integration: HTTP 200, сведения о задаче
+    Integration -> Integration: Сохранение полученных данных
+    Integration -> Integration: Передача задачи на дальнейшую обработку
+else Задача не найдена
+    Bitrix --> Integration: HTTP 200, пустая выборка
+    Integration -> Integration: Регистрация отсутствия задачи
+    Integration -> Integration: Завершение обработки
+else Ошибка REST API
+    Bitrix --> Integration: error, error_description
+    Integration -> Integration: Регистрация ошибки
+    Integration -> Integration: Завершение обработки
+end
+
+@enduml

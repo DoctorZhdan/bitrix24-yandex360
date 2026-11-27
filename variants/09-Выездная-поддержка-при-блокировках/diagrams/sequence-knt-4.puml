@@ -1,0 +1,32 @@
+@startuml
+title КНТ-4. Передача уведомлений выездному инженеру через Яндекс 360
+
+participant "Интеграционная система" as Integration
+participant "Яндекс 360 Мессенджер" as Yandex
+actor "Выездной инженер" as Engineer
+
+activate Integration
+
+Integration -> Integration: Получение сведений о задаче
+Integration -> Integration: Определение исполнителя
+Integration -> Integration: Получение логина пользователя Яндекс 360
+Integration -> Integration: Формирование текста уведомления
+Integration -> Integration: Формирование payload_id и кнопок
+
+Integration -> Yandex: POST /bot/v1/messages/sendText/\n(login, text, payload_id, suggest_buttons)
+
+activate Yandex
+
+alt Запрос обработан успешно
+    Yandex --> Integration: Результат успешной отправки
+    Yandex -> Engineer: Персональное уведомление о задаче
+    Engineer -> Yandex: Получение уведомления
+else Ошибка отправки
+    Yandex --> Integration: Информация об ошибке
+    Integration -> Integration: Регистрация ошибки отправки
+end
+
+deactivate Yandex
+deactivate Integration
+
+@enduml

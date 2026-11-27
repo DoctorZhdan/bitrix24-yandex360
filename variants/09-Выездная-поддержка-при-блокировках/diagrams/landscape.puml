@@ -1,0 +1,26 @@
+@startuml landscape
+title Контур систем. Интеграция Bitrix24 и Яндекс 360 для выездных инженеров
+
+left to right direction
+
+actor "Руководитель" as Manager
+actor "Выездной инженер" as Engineer
+actor "Офисный сотрудник" as Office
+
+component "Интеграционная система" as Integration
+
+component "Bitrix24" as Bitrix
+component "Яндекс 360 Мессенджер" as Yandex
+
+Manager --> Bitrix : Управление задачами\nи контроль выполнения
+Office --> Bitrix : Работа со сделками,\nзадачами и результатами
+
+Bitrix --> Integration : События CRM\nи задач
+Integration --> Bitrix : Обновление статусов,\nкомментарии и фотографии
+
+Integration --> Yandex : Персональные уведомления\nи кнопки быстрого ответа
+Yandex --> Integration : Сообщения, действия\nи фотографии инженера
+
+Engineer --> Yandex : Подтверждение задач,\nстатусы и результаты работ
+
+@enduml

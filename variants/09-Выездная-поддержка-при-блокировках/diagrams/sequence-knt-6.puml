@@ -1,0 +1,61 @@
+@startuml
+title КНТ-6. Передача информации о выполнении работ из интеграционной системы в Bitrix24
+
+actor "Выездной инженер" as Engineer
+participant "Яндекс 360 Мессенджер" as Yandex
+participant "Интеграционная система" as Integration
+participant "Bitrix24" as Bitrix
+
+Engineer -> Yandex: Отправка сообщения,\nфотографий или действия
+Yandex -> Integration: Передача обновления
+
+activate Integration
+
+Integration -> Integration: Определение отправителя
+Integration -> Integration: Определение соответствующей задачи
+Integration -> Bitrix: tasks.task.list\nПоиск задачи по сделке
+Bitrix --> Integration: Данные задачи
+
+Integration -> Integration: Проверка назначения задачи инженеру
+
+alt Задача не назначена инженеру
+    Integration -> Integration: Отклонение запроса
+else Задача назначена инженеру
+
+    alt Запрос на изменение статуса
+        Integration -> Integration: Проверка допустимости статуса
+
+        alt Изменение допустимо
+            Integration -> Bitrix: tasks.task.update\nИзменение STATUS
+            Bitrix --> Integration: Результат операции
+        else Изменение недопустимо
+            Integration -> Integration: Отклонение изменения статуса
+        end
+
+    else Передача текстовой информации
+        Integration -> Bitrix: crm.timeline.comment.add\nДобавление комментария в таймлайн сделки
+        Bitrix --> Integration: Результат операции
+
+    else Передача фотографий
+        loop Для каждой фотографии
+            Integration -> Yandex: messages/getFile\nПолучение файла по file_id
+            Yandex --> Integration: Поток содержимого файла
+
+            Integration -> Bitrix: Загрузка файла\nв Диск или задачу
+            Bitrix --> Integration: Результат загрузки
+
+            Integration -> Bitrix: Привязка файла к задаче
+            Bitrix --> Integration: Результат сохранения
+        end
+
+    else Информация о проблеме или запчастях
+        Integration -> Bitrix: crm.timeline.comment.add\nПередача информации о проблеме
+        Bitrix --> Integration: Результат операции
+    end
+end
+
+Integration -> Integration: Регистрация результата обработки
+
+deactivate Integration
+
+@enduml

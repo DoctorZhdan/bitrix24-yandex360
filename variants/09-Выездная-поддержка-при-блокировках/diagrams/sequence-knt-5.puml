@@ -1,0 +1,39 @@
+@startuml
+title КНТ-5. Получение сообщений и действий инженера из Яндекс 360
+
+actor "Выездной инженер" as Engineer
+participant "Яндекс 360 Мессенджер" as Yandex
+participant "Интеграционная система" as Integration
+
+Engineer -> Yandex: Отправка сообщения или нажатие кнопки
+Yandex -> Integration: POST /webhook\nОбновление сообщения или действия
+
+activate Integration
+
+Integration -> Integration: Регистрация полученного обновления
+Integration -> Integration: Проверка факта предыдущей обработки
+
+alt Обновление уже обработано
+    Integration -> Integration: Предотвращение повторной обработки
+    Integration --> Yandex: HTTP 200 OK
+else Новое обновление
+    Integration -> Integration: Определение отправителя
+
+    alt Получено действие bot_request
+        Integration -> Integration: Извлечение callback_data
+        Integration -> Integration: Подготовка данных для обработки действия
+    else Получено текстовое сообщение
+        Integration -> Integration: Извлечение текста сообщения
+        Integration -> Integration: Подготовка данных для обработки сообщения
+    else Получено сообщение с файлом
+        Integration -> Integration: Извлечение file_id
+        Integration -> Integration: Сохранение идентификатора файла
+    end
+
+    Integration -> Integration: Регистрация факта получения обновления
+    Integration --> Yandex: HTTP 200 OK
+end
+
+deactivate Integration
+
+@enduml

@@ -1,0 +1,27 @@
+@startuml KNT-2
+title КНТ-2. Получение данных сделки из Bitrix24
+
+participant "Интеграционная система" as Integration
+participant "Bitrix24 REST API" as Bitrix
+
+Integration -> Bitrix: POST /crm.deal.get\n{id: 14821}
+activate Bitrix
+
+alt Сделка найдена
+    Bitrix --> Integration: HTTP 200\nresult (данные сделки)
+    deactivate Bitrix
+
+    Integration -> Integration: Проверить полученные данные
+    Integration -> Integration: Определить категорию и стадию сделки
+    Integration -> Integration: Получить идентификатор инженера
+    Integration -> Integration: Передать сведения на дальнейшую обработку
+
+else Ошибка получения сделки
+    Bitrix --> Integration: error, error_description
+    deactivate Bitrix
+
+    Integration -> Integration: Зарегистрировать проблему
+    Integration -> Integration: Прекратить дальнейшую обработку
+end
+
+@enduml
