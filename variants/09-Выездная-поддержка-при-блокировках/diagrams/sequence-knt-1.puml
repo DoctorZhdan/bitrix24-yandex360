@@ -1,0 +1,40 @@
+@startuml KNT-1
+title КНТ-1. Передача событий из Bitrix24 в интеграционную систему
+
+participant "Bitrix24" as Bitrix
+participant "Интеграционная система" as Integration
+database "Реестр обработки событий" as Registry
+
+Bitrix -> Integration: POST /webhook (событие, ID сущности)
+activate Integration
+
+Integration -> Integration: Проверить корректность полученных данных
+
+alt Данные корректны
+    Integration -> Registry: Проверить наличие события
+    activate Registry
+    Registry --> Integration: Результат проверки
+    deactivate Registry
+
+    alt Событие новое
+        Integration -> Registry: Зарегистрировать событие
+        Registry --> Integration: Событие зарегистрировано
+        Integration --> Bitrix: HTTP 200 OK\n{"status": "accepted"}
+        Integration -> Integration: Передать событие на дальнейшую обработку
+        note right
+          Получение полной информации
+          о сделке или задаче выполняется
+          отдельным REST-запросом
+        end note
+    else Событие уже поступало
+        Integration -> Integration: Проверить состояние бизнес-операции
+        Integration -> Integration: Исключить повторное выполнение завершённых действий
+        Integration --> Bitrix: HTTP 200 OK\n{"status": "accepted"}
+    end
+
+else Данные некорректны
+    Integration --> Bitrix: HTTP 400 Bad Request
+end
+
+deactivate Integration
+@enduml
